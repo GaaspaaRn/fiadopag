@@ -50,16 +50,19 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const fetchData = async () => {
     try {
-      const [custRes, prodRes, saleRes, instRes, profileRes, userRes] = await Promise.all([
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setState(s => ({ ...s, isLoaded: true }));
+        return;
+      }
+
+      const [custRes, prodRes, saleRes, instRes, profileRes] = await Promise.all([
         supabase.from('customers').select('*').order('created_at', { ascending: false }),
         supabase.from('products').select('*').order('created_at', { ascending: false }),
         supabase.from('sales').select('*').order('created_at', { ascending: false }),
         supabase.from('installments').select('*').order('data_vencimento', { ascending: true }),
-        supabase.from('profiles').select('expires_at').maybeSingle(),
-        supabase.auth.getUser()
+        supabase.from('profiles').select('expires_at').maybeSingle()
       ]);
-
-      const user = userRes.data?.user;
       const meta = user?.user_metadata || {};
 
       setState({
@@ -101,7 +104,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { fetchData(); }, []);
 
   const addCustomer = async (c: Omit<Customer, 'id' | 'createdAt'>) => {
-    const { data } = await supabase.from('customers').insert({ nome: c.name, telefone: c.phone, documento: c.documentNumber, endereco: c.address, obs: c.notes }).select().single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return '';
+
+    const { data } = await supabase.from('customers').insert({ 
+      nome: c.name, 
+      telefone: c.phone, 
+      documento: c.documentNumber, 
+      endereco: c.address, 
+      obs: c.notes,
+      user_id: user.id 
+    }).select().single();
     if (data) {
       const newCust = { id: data.id, name: data.nome, phone: data.telefone, documentNumber: data.documento, address: data.endereco, notes: data.obs, createdAt: data.created_at };
       setState(s => ({ ...s, customers: [newCust, ...s.customers] }));
@@ -121,7 +134,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addProduct = async (p: Omit<Product, 'id' | 'createdAt'>) => {
-    const { data } = await supabase.from('products').insert({ nome: p.name, preco_venda: p.sellPrice, preco_custo: p.costPrice, estoque: p.stock, ean: p.barcode }).select().single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return '';
+
+    const { data } = await supabase.from('products').insert({ 
+      nome: p.name, 
+      preco_venda: p.sellPrice, 
+      preco_custo: p.costPrice, 
+      estoque: p.stock, 
+      ean: p.barcode,
+      user_id: user.id
+    }).select().single();
     if (data) {
       setState(s => ({ ...s, products: [{ id: data.id, name: data.nome, costPrice: data.preco_custo, sellPrice: data.preco_venda, stock: data.estoque, barcode: data.ean, createdAt: data.created_at }, ...s.products] }));
       return data.id;
@@ -140,6 +163,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addSale = async (s: Omit<Sale, 'id' | 'createdAt' | 'lucroOperacao' | 'valorTotalFinanciado' | 'principalPago'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return '';
+
     let valorTotal = s.totalValue;
     let lucro = 0;
     
@@ -152,7 +178,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data: saleData } = await supabase.from('sales').insert({
-      customer_id: s.customerId, product_nome: s.product, valor_base: s.totalValue, qtd_parcelas: s.installCount, frequencia: s.frequencia, modalidade: s.modalidade, taxa_operacao: s.taxaOperacao, taxa_atraso: s.interestRate, valor_total_financiado: valorTotal, lucro_operacao: lucro, principal_pago: false
+      customer_id: s.customerId, 
+      product_nome: s.product, 
+      valor_base: s.totalValue, 
+      qtd_parcelas: s.installCount, 
+      frequencia: s.frequencia, 
+      modalidade: s.modalidade, 
+      taxa_operacao: s.taxaOperacao, 
+      taxa_atraso: s.interestRate, 
+      valor_total_financiado: valorTotal, 
+      lucro_operacao: lucro, 
+      principal_pago: false,
+      user_id: user.id
     }).select().single();
 
     if (saleData) {
@@ -176,7 +213,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (inserts.length > 0) {
-        await supabase.from('installments').insert(inserts);
+        await supabase.from('installments').insert(inserts.map(i => ({ ...i, user_id: user.id })));
       }
       fetchData();
     }

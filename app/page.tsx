@@ -13,6 +13,7 @@ type Tab = 'dashboard' | 'clientes' | 'produtos' | 'vendas' | 'receber' | 'menu'
 export default function AppDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [autoOpenSale, setAutoOpenSale] = useState(false);
+  const [autoOpenCustomer, setAutoOpenCustomer] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const store = useStore();
 
@@ -60,12 +61,28 @@ export default function AppDashboard() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Mobile Header (Top) */}
-        <header className="sm:hidden h-14 bg-white border-b border-slate-200 flex items-center px-4 shrink-0">
+        <header className="sm:hidden h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0">
           <div className="font-bold text-emerald-700 flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center">
               <Wallet size={14} />
             </span>
             Fiadopag
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setActiveTab('clientes'); setAutoOpenCustomer(true); }}
+              className="p-2 text-slate-500 hover:text-emerald-600 transition-colors"
+              title="Novo Cliente"
+            >
+              <Users size={20} />
+            </button>
+            <button
+              onClick={() => { setActiveTab('vendas'); setAutoOpenSale(true); }}
+              className="p-2 text-slate-500 hover:text-emerald-600 transition-colors"
+              title="Nova Venda"
+            >
+              <ShoppingBag size={20} />
+            </button>
           </div>
         </header>
 
@@ -91,8 +108,13 @@ export default function AppDashboard() {
 
         {/* Dynamic View Context Menu */}
         <div className="flex-1 overflow-y-auto p-4 pb-24 sm:p-8 sm:pb-8 relative">
-          {activeTab === 'dashboard' && <DashboardView />}
-          {activeTab === 'clientes' && <CustomersView />}
+          {activeTab === 'dashboard' && (
+            <DashboardView
+              onNewSale={() => { setActiveTab('vendas'); setAutoOpenSale(true); }}
+              onNewCustomer={() => { setActiveTab('clientes'); setAutoOpenCustomer(true); }}
+            />
+          )}
+          {activeTab === 'clientes' && <CustomersView autoOpen={autoOpenCustomer} setAutoOpen={setAutoOpenCustomer} />}
           {activeTab === 'produtos' && <ProductsView />}
           {activeTab === 'vendas' && <SalesView autoOpen={autoOpenSale} setAutoOpen={setAutoOpenSale} />}
           {activeTab === 'receber' && <ReceivablesView />}
@@ -220,7 +242,7 @@ function NavItem({ active, icon, label, onClick }: { active: boolean, icon: Reac
 // DASHBOARD
 // -------------------------------------------------------------
 
-function DashboardView() {
+function DashboardView({ onNewSale, onNewCustomer }: { onNewSale: () => void, onNewCustomer: () => void }) {
   const store = useStore();
 
   const stats = useMemo(() => {
@@ -273,8 +295,28 @@ function DashboardView() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-200">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Visão Geral</h1>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Visão Geral</h1>
+          <p className="text-sm text-slate-500">Acompanhe a saúde financeira do seu negócio.</p>
+        </div>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button
+            onClick={onNewCustomer}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95"
+          >
+            <Users size={18} className="text-emerald-600" />
+            <span className="hidden sm:inline">Novo Cliente</span>
+            <span className="sm:hidden">Cliente</span>
+          </button>
+          <button
+            onClick={onNewSale}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg active:scale-95"
+          >
+            <Plus size={18} />
+            Nova Venda
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -389,10 +431,18 @@ function SummaryCard({ title, value, type = 'info', icon, isNumber = false }: { 
 // CUSTOMERS
 // -------------------------------------------------------------
 
-function CustomersView() {
+function CustomersView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?: (v: boolean) => void }) {
   const store = useStore();
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  React.useEffect(() => {
+    if (autoOpen) {
+      setIsModalOpen(true);
+      if (setAutoOpen) setAutoOpen(false);
+    }
+  }, [autoOpen, setAutoOpen]);
+
   const [viewCustomer, setViewCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', phone: '', documentNumber: '', address: '', notes: '' });
 
