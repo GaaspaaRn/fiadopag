@@ -3,8 +3,8 @@ import './globals.css';
 import { StoreProvider } from '@/lib/store';
 
 export const metadata: Metadata = {
-  title: 'Fiadopay',
-  description: 'Controle de vendas fiadas e parcelas a receber',
+  title: 'Fiadopag - Gestão Financeira',
+  description: 'Sistema simplificado para gestão de fiado e parcelas a receber',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

@@ -32,7 +32,7 @@ export default function AppDashboard() {
             <span className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
               <Wallet size={18} />
             </span>
-            Fiadopay
+            Fiadopag
           </div>
         </div>
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -65,7 +65,7 @@ export default function AppDashboard() {
             <span className="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center">
               <Wallet size={14} />
             </span>
-            Fiadopay
+            Fiadopag
           </div>
         </header>
 
@@ -151,7 +151,7 @@ function PaywallView({ expiresAt }: { expiresAt: Date }) {
         <h1 className="text-2xl font-bold mb-3">Assinatura Expirada</h1>
 
         <p className="text-[#a1a1aa] mb-6 text-sm leading-relaxed">
-          Seu período de acesso ao Fiadopay expirou no dia <strong className="text-white">{format(expiresAt, 'dd/MM/yyyy')}</strong>.
+          Seu período de acesso ao Fiadopag expirou no dia <strong className="text-white">{format(expiresAt, 'dd/MM/yyyy')}</strong>.
           Para continuar usando todas as ferramentas de gestão, realize o pagamento da sua mensalidade.
         </p>
 
@@ -182,7 +182,7 @@ function PaywallView({ expiresAt }: { expiresAt: Date }) {
       </div>
 
       <div className="mt-8 text-center text-xs text-white/30">
-        Fiadopay © 2026. Todos os direitos reservados.
+        Fiadopag © 2026. Todos os direitos reservados.
       </div>
     </div>
   );
@@ -535,7 +535,7 @@ function CustomersView() {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-150">
             <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-emerald-50/50">
               <div>
-                <h2 className="text-lg font-bold text-emerald-900 flex items-center gap-2"><Users size={20} /> {viewCustomer.name}</h2>
+                <h2 className="text-lg font-bold text-emerald-900 flex items-center gap-2"><h1 className="text-lg font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Fiadopag</h1><Users size={20} /> {viewCustomer.name}</h2>
                 <p className="text-xs text-emerald-700 font-medium mt-1">Cliente desde {format(parseISO(viewCustomer.createdAt), 'dd/MM/yyyy')}</p>
               </div>
               <button onClick={() => setViewCustomer(null)} className="text-emerald-400 hover:text-emerald-700 text-2xl leading-none">&times;</button>
@@ -1449,7 +1449,7 @@ function SettingsView() {
           <div className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <h2 className="font-semibold text-red-800">Encerrar Sessão</h2>
-              <p className="text-sm text-red-600 mt-1">Sair da sua conta Fiadopay com segurança neste dispositivo.</p>
+              <p className="text-sm text-red-600 mt-1">Sair da sua conta Fiadopag com segurança neste dispositivo.</p>
             </div>
             <button
               onClick={handleLogout}
@@ -1471,10 +1471,10 @@ function SettingsView() {
           <div>
             <div className="flex items-center justify-center gap-2 mb-2 text-slate-400">
               <Wallet size={20} />
-              <span className="font-bold tracking-tight text-lg">Fiadopay</span>
+              <span className="font-bold tracking-tight text-lg">Fiadopag</span>
             </div>
             <p className="text-xs text-slate-400">Versão 1.2.0 (Cloud-First)</p>
-            <p className="text-xs text-slate-400 mt-1">© 2026 Fiadopay. Todos os direitos reservados.</p>
+            <p className="text-xs text-slate-400 mt-1">© 2026 Fiadopag. Todos os direitos reservados.</p>
           </div>
         </div>
 

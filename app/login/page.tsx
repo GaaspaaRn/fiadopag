@@ -112,7 +112,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-[#10b981]/10 rounded-2xl flex items-center justify-center mb-4 border border-[#10b981]/20">
             <Store className="w-8 h-8 text-[#10b981]" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Fiadopay</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white mb-2">Fiadopag</h1>
           <p className="text-[#a1a1aa] text-center">
             {isLogin ? 'Bem-vindo de volta! Faça login para continuar.' : 'Crie sua conta para começar a gerenciar.'}
           </p>

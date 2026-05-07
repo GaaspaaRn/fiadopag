@@ -236,7 +236,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "fiadopay_relatorio.csv");
+    link.setAttribute("download", "fiadopag_relatorio.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
