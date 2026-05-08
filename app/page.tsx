@@ -228,8 +228,8 @@ function NavItem({ active, icon, label, onClick }: { active: boolean, icon: Reac
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${active
-          ? 'bg-emerald-50 text-emerald-700'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+        ? 'bg-emerald-50 text-emerald-700'
+        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
         }`}
     >
       {icon}
@@ -651,6 +651,7 @@ function CustomersView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoO
 function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?: (v: boolean) => void }) {
   const store = useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   React.useEffect(() => {
     if (autoOpen) {
@@ -693,53 +694,53 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
     }
   }, [formData]);
 
-  const handleSave = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const typedName = formData.customerName.trim();
-    if (!typedName) return;
+    if (isSubmitting) return;
 
-    let finalCustomerId = '';
-    const existingCustomer = store.customers.find(c => c.name.toLowerCase() === typedName.toLowerCase());
+    try {
+      setIsSubmitting(true);
+      const typedName = formData.customerName.trim();
+      if (!typedName) return;
 
-    if (existingCustomer) {
-      finalCustomerId = existingCustomer.id;
-    } else {
-      finalCustomerId = await store.addCustomer({
-        name: typedName,
-        phone: '',
-        documentNumber: '',
-        address: '',
-        notes: 'Cliente criado automaticamente durante a venda.'
-      });
-    }
+      let finalCustomerId = '';
+      const existingCustomer = store.customers.find(c => c.name.toLowerCase() === typedName.toLowerCase());
 
-    const typedProductName = formData.product.trim();
-    if (typedProductName) {
-      const existingProduct = store.products.find(p => p.name.toLowerCase() === typedProductName.toLowerCase());
-      if (!existingProduct) {
-        await store.addProduct({
-          name: typedProductName,
-          sellPrice: parseFloat(formData.totalValue.replace(',', '.')),
+      if (existingCustomer) {
+        finalCustomerId = existingCustomer.id;
+      } else {
+        finalCustomerId = await store.addCustomer({
+          name: typedName,
+          phone: '',
+          documentNumber: '',
+          address: '',
+          notes: 'Cliente criado automaticamente durante a venda.'
         });
       }
-    }
 
-    await store.addSale({
-      customerId: finalCustomerId,
-      product: formData.product,
-      totalValue: parseFloat(formData.totalValue.replace(',', '.')),
-      modalidade: formData.modalidade,
-      taxaOperacao: parseFloat(formData.taxaOperacao) || 0,
-      frequencia: formData.frequencia,
-      installCount: parseInt(formData.installCount),
-      startDate: new Date(formData.startDate + "T12:00:00Z").toISOString(),
-      interestRate: parseFloat(formData.interestRate) || 0,
-      notes: formData.notes
-    });
-    setIsModalOpen(false);
-    setFormData({
-      customerName: '', product: '', totalValue: '', modalidade: 'fiado', taxaOperacao: '0', frequencia: 'mensal', installCount: '1', startDate: new Date().toISOString().split('T')[0], interestRate: '2', notes: ''
-    });
+      await store.addSale({
+        customerId: finalCustomerId,
+        product: formData.product,
+        totalValue: parseFloat(formData.totalValue.replace(',', '.')),
+        modalidade: formData.modalidade,
+        taxaOperacao: parseFloat(formData.taxaOperacao) || 0,
+        frequencia: formData.frequencia,
+        installCount: parseInt(formData.installCount),
+        startDate: new Date(formData.startDate + "T12:00:00Z").toISOString(),
+        interestRate: parseFloat(formData.interestRate) || 0,
+        notes: formData.notes
+      });
+
+      setIsModalOpen(false);
+      setFormData({
+        customerName: '', product: '', totalValue: '', modalidade: 'fiado', taxaOperacao: '0', frequencia: 'mensal', installCount: '1', startDate: new Date().toISOString().split('T')[0], interestRate: '2', notes: ''
+      });
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao salvar venda. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -801,7 +802,7 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 scrollbar-thin bg-slate-50">
-              <form id="sale-form" onSubmit={handleSave} className="space-y-6">
+              <form id="sale-form" onSubmit={handleSubmit} className="space-y-6">
 
                 {/* Section 1: Basic Info */}
                 <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -934,8 +935,19 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
             </div>
 
             <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3 bg-white">
-              <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
-              <button type="submit" form="sale-form" className="px-6 py-2.5 text-sm text-white font-bold bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md transition-colors flex items-center gap-2">Oficializar Operação <Check size={18} /></button>
+              <button type="button" disabled={isSubmitting} onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm text-slate-600 font-medium hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50">Cancelar</button>
+              <button
+                type="submit"
+                form="sale-form"
+                disabled={isSubmitting}
+                className="px-6 py-2.5 text-sm text-white font-bold bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md transition-all flex items-center gap-2 disabled:bg-slate-400 disabled:cursor-not-allowed active:scale-95"
+              >
+                {isSubmitting ? (
+                  <>Aguarde... <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div></>
+                ) : (
+                  <>Oficializar Operação <Check size={18} /></>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -952,6 +964,8 @@ function ReceivablesView() {
   const store = useStore();
   const [filterCustomer, setFilterCustomer] = useState('');
   const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterStartDate, setFilterStartDate] = useState('');
+  const [filterEndDate, setFilterEndDate] = useState('');
 
   const [payModalData, setPayModalData] = useState<{ inst: Installment | null, calc: { value: number, interest: number, daysLate: number } | null }>({ inst: null, calc: null });
   const [manualPayValue, setManualPayValue] = useState('');
@@ -963,7 +977,11 @@ function ReceivablesView() {
     const status = store.getDynamicInstallmentStatus(i);
     const statusMatch = filterStatus === 'ALL' || status === filterStatus;
 
-    return searchMatch && statusMatch;
+    const dueDate = parseISO(i.dueDate);
+    const dateMatch = (!filterStartDate || dueDate >= parseISO(filterStartDate)) &&
+      (!filterEndDate || dueDate <= parseISO(filterEndDate));
+
+    return searchMatch && statusMatch && dateMatch;
   }).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
 
   const openPayModal = (inst: Installment) => {
@@ -1020,6 +1038,24 @@ function ReceivablesView() {
             <option value="ATRASADO">Atrasados (Urgentes!)</option>
             <option value="PAGO">Baixados (Pagos)</option>
           </select>
+          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-sm">
+            <Calendar size={14} className="text-slate-400" />
+            <input
+              type="date"
+              value={filterStartDate}
+              onChange={e => setFilterStartDate(e.target.value)}
+              className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none"
+              title="Data Início"
+            />
+            <span className="text-slate-300 text-xs">até</span>
+            <input
+              type="date"
+              value={filterEndDate}
+              onChange={e => setFilterEndDate(e.target.value)}
+              className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none"
+              title="Data Fim"
+            />
+          </div>
           <div className="flex-1 w-full flex justify-end text-sm text-slate-600 items-center">
             Espectativa de Recebimento do filtro:&nbsp;<span className="font-bold text-emerald-700 text-base">{formatCurrency(totalsFilteredResult)}</span>
           </div>
