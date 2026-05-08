@@ -5,7 +5,7 @@ import { useStore, Installment, Sale, Customer } from '@/lib/store';
 import { formatCurrency, formatPhone } from '@/lib/format';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { LayoutDashboard, Users, ShoppingBag, Wallet, Plus, Search, Calendar, Check, AlertCircle, AlertTriangle, FileDown, Import, Trash2, Eye, Pencil, Package, Menu, Settings, Info, Database, Building2, UserCircle, Lock, LogOut, Save } from 'lucide-react';
-import { format, parseISO, isToday, isBefore } from 'date-fns';
+import { format, parseISO, isToday, isBefore, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 type Tab = 'dashboard' | 'clientes' | 'produtos' | 'vendas' | 'receber' | 'menu' | 'configuracoes';
@@ -954,6 +954,28 @@ function ReceivablesView() {
   const [payModalData, setPayModalData] = useState<{ inst: Installment | null, calc: { value: number, interest: number, daysLate: number } | null }>({ inst: null, calc: null });
   const [manualPayValue, setManualPayValue] = useState('');
 
+  const setQuickRange = (type: 'today' | 'week' | 'month' | 'all') => {
+    const now = new Date();
+    if (type === 'today') {
+      const d = format(now, 'yyyy-MM-dd');
+      setFilterStartDate(d);
+      setFilterEndDate(d);
+    } else if (type === 'week') {
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(now, { weekStartsOn: 1 });
+      setFilterStartDate(format(start, 'yyyy-MM-dd'));
+      setFilterEndDate(format(end, 'yyyy-MM-dd'));
+    } else if (type === 'month') {
+      const start = startOfMonth(now);
+      const end = endOfMonth(now);
+      setFilterStartDate(format(start, 'yyyy-MM-dd'));
+      setFilterEndDate(format(end, 'yyyy-MM-dd'));
+    } else {
+      setFilterStartDate('');
+      setFilterEndDate('');
+    }
+  };
+
   const filtered = store.installments.filter(i => {
     const cust = store.customers.find(c => c.id === i.customerId);
     const searchMatch = cust?.name.toLowerCase().includes(filterCustomer.toLowerCase());
@@ -994,54 +1016,69 @@ function ReceivablesView() {
   }, 0);
 
   return (
-    <div className="max-w-6xl mx-auto h-full flex flex-col animate-in fade-in duration-200">
+<div className="max-w-6xl mx-auto h-full flex flex-col animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Cobranças e Recebimentos</h1>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm flex-1 flex flex-col overflow-hidden">
         {/* Filters */}
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 bg-slate-50/80 w-full items-center">
-          <div className="relative flex-1 w-full max-w-sm">
-            <Search size={16} className="absolute left-3 top-[10px] text-slate-400" />
-            <input
-              type="text"
-              placeholder="Digite o nome do cliente..."
-              value={filterCustomer}
-              onChange={e => setFilterCustomer(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-600 outline-none shadow-sm"
-            />
+        <div className="p-4 border-b border-slate-100 bg-slate-50/80 space-y-4">
+          {/* Row 1: Search and Status */}
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
+            <div className="relative flex-1 w-full">
+              <Search size={16} className="absolute left-3 top-[10px] text-slate-400" />
+              <input
+                type="text"
+                placeholder="Buscar cliente..."
+                value={filterCustomer}
+                onChange={e => setFilterCustomer(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-600 outline-none shadow-sm"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={e => setFilterStatus(e.target.value)}
+              className="w-full sm:w-48 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-600 outline-none shadow-sm font-medium text-slate-700"
+            >
+              <option value="ALL">Todos os Status</option>
+              <option value="PENDENTE">No Prazo</option>
+              <option value="ATRASADO">Atrasados</option>
+              <option value="PAGO">Pagos</option>
+            </select>
           </div>
-          <select
-            value={filterStatus}
-            onChange={e => setFilterStatus(e.target.value)}
-            className="w-full sm:w-48 px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-600 outline-none shadow-sm font-medium text-slate-700"
-          >
-            <option value="ALL">Todo o Histórico</option>
-            <option value="PENDENTE">No Prazo (Pendentes)</option>
-            <option value="ATRASADO">Atrasados (Urgentes!)</option>
-            <option value="PAGO">Baixados (Pagos)</option>
-          </select>
-          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-2 py-1 shadow-sm">
-            <Calendar size={14} className="text-slate-400" />
-            <input
-              type="date"
-              value={filterStartDate}
-              onChange={e => setFilterStartDate(e.target.value)}
-              className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none"
-              title="Data Início"
-            />
-            <span className="text-slate-300 text-xs">até</span>
-            <input
-              type="date"
-              value={filterEndDate}
-              onChange={e => setFilterEndDate(e.target.value)}
-              className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none"
-              title="Data Fim"
-            />
-          </div>
-          <div className="flex-1 w-full flex justify-end text-sm text-slate-600 items-center">
-            Espectativa de Recebimento do filtro:&nbsp;<span className="font-bold text-emerald-700 text-base">{formatCurrency(totalsFilteredResult)}</span>
+
+          {/* Row 2: Date Filters & Quick Actions */}
+          <div className="flex flex-col lg:flex-row gap-3 items-start lg:items-center">
+            <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1.5 shadow-sm w-full lg:w-auto">
+              <Calendar size={14} className="text-slate-400" />
+              <input
+                type="date"
+                value={filterStartDate}
+                onChange={e => setFilterStartDate(e.target.value)}
+                className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none bg-transparent"
+                title="Data Início"
+              />
+              <span className="text-slate-300 text-xs px-1">até</span>
+              <input
+                type="date"
+                value={filterEndDate}
+                onChange={e => setFilterEndDate(e.target.value)}
+                className="text-xs border-none focus:ring-0 p-1 text-slate-600 outline-none bg-transparent"
+                title="Data Fim"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 w-full no-scrollbar">
+              <button onClick={() => setQuickRange('today')} className="whitespace-nowrap px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-full hover:border-emerald-500 hover:text-emerald-600 transition-colors shadow-sm">Hoje</button>
+              <button onClick={() => setQuickRange('week')} className="whitespace-nowrap px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-full hover:border-emerald-500 hover:text-emerald-600 transition-colors shadow-sm">Esta Semana</button>
+              <button onClick={() => setQuickRange('month')} className="whitespace-nowrap px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-600 rounded-full hover:border-emerald-500 hover:text-emerald-600 transition-colors shadow-sm">Este Mês</button>
+              <button onClick={() => setQuickRange('all')} className="whitespace-nowrap px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors shadow-sm">Limpar</button>
+            </div>
+            
+            <div className="hidden lg:flex flex-1 justify-end text-sm text-slate-600 items-center">
+              Espectativa de Recebimento do filtro:&nbsp;<span className="font-bold text-emerald-700 text-base">{formatCurrency(totalsFilteredResult)}</span>
+            </div>
           </div>
         </div>
 
