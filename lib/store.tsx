@@ -1,20 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { addMonths, differenceInDays, isBefore, startOfDay, parseISO } from 'date-fns';
+import { addMonths, parseISO } from 'date-fns';
 import { supabase } from './supabase';
+import { calcularValorComAtraso, obterStatusDinamicoParcela } from './calculos';
 
-export type Product = { id: string; name: string; costPrice?: number; sellPrice?: number; stock?: number; barcode?: string; createdAt: string; };
-export type Customer = { id: string; name: string; phone: string; documentNumber: string; address: string; notes: string; createdAt: string; };
-export type Sale = {
-  id: string; customerId: string; product: string; totalValue: number; installCount: number; startDate: string; interestRate: number; notes: string; createdAt: string;
-  modalidade: 'fiado' | 'carne' | 'so_juros'; taxaOperacao: number; valorTotalFinanciado: number; lucroOperacao: number; principalPago: boolean; frequencia: string;
-};
-export type InstallmentStatus = 'PENDENTE' | 'PAGO' | 'ATRASADO';
-export type Installment = {
-  id: string; saleId: string; customerId: string; number: number; dueDate: string; originalValue: number; status: InstallmentStatus; paidDate?: string; paidValue?: number;
-  tipo: 'padrao' | 'somente_juros' | 'quitacao_principal';
-};
+import { Product, Customer, Sale, InstallmentStatus, Installment } from './types';
 
 type StoreState = { 
   customers: Customer[]; 
@@ -236,26 +227,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   };
 
   const getDynamicInstallmentStatus = (inst: Installment): InstallmentStatus => {
-    if (inst.status === 'PAGO') return 'PAGO';
-    const today = startOfDay(new Date());
-    const due = startOfDay(parseISO(inst.dueDate));
-    if (isBefore(due, today)) return 'ATRASADO';
-    return 'PENDENTE';
+    return obterStatusDinamicoParcela(inst);
   };
 
   const getCalculatedValue = (sale: Sale, inst: Installment) => {
-    if (inst.status === 'PAGO') return { value: inst.paidValue || inst.originalValue, interest: 0, daysLate: 0 };
-    const today = startOfDay(new Date());
-    const due = startOfDay(parseISO(inst.dueDate));
-    if (!isBefore(due, today)) return { value: inst.originalValue, interest: 0, daysLate: 0 };
-
-    const daysLate = differenceInDays(today, due);
-    const divisor = sale.frequencia === 'semanal' ? 7 : sale.frequencia === 'quinzenal' ? 15 : 30;
-    const dailyRate = (sale.interestRate / 100) / divisor;
-    const interest = parseFloat((inst.originalValue * dailyRate * daysLate).toFixed(2));
-    const value = inst.originalValue + interest;
-
-    return { value, interest, daysLate };
+    return calcularValorComAtraso(sale, inst);
   };
 
   const exportToCSV = () => {
