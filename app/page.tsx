@@ -832,21 +832,21 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                 {/* Section 2: Modality */}
                 <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-1">2. Modelo de Operação</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'fiado' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <label className={`cursor-pointer rounded-lg border-2 p-1.5 flex flex-col items-center text-center transition-all ${formData.modalidade === 'fiado' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-100 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="fiado" checked={formData.modalidade === 'fiado'} onChange={() => setFormData({ ...formData, modalidade: 'fiado', taxaOperacao: '0' })} className="sr-only" />
-                      <span className="font-bold text-slate-800 text-sm">Fiado</span>
-                      <span className="text-[10px] text-slate-500 leading-tight">Sem juros no capital.</span>
+                      <span className="font-bold text-slate-800 text-[11px] sm:text-sm">Fiado</span>
+                      <span className="text-[9px] text-slate-500 leading-tight">Sem juros</span>
                     </label>
-                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'carne' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                    <label className={`cursor-pointer rounded-lg border-2 p-1.5 flex flex-col items-center text-center transition-all ${formData.modalidade === 'carne' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-100 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="carne" checked={formData.modalidade === 'carne'} onChange={() => setFormData({ ...formData, modalidade: 'carne' })} className="sr-only" />
-                      <span className="font-bold text-slate-800 text-sm">Carnê</span>
-                      <span className="text-[10px] text-slate-500 leading-tight">Juros pré-fixados.</span>
+                      <span className="font-bold text-slate-800 text-[11px] sm:text-sm">Carnê</span>
+                      <span className="text-[9px] text-slate-500 leading-tight">Juros Simples</span>
                     </label>
-                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'so_juros' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                    <label className={`cursor-pointer rounded-lg border-2 p-1.5 flex flex-col items-center text-center transition-all ${formData.modalidade === 'so_juros' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-100 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="so_juros" checked={formData.modalidade === 'so_juros'} onChange={() => setFormData({ ...formData, modalidade: 'so_juros', frequencia: 'mensal' })} className="sr-only" />
-                      <span className="font-bold text-slate-800 text-sm">Só Juros</span>
-                      <span className="text-[10px] text-slate-500 leading-tight">Cliente paga só juros.</span>
+                      <span className="font-bold text-slate-800 text-[11px] sm:text-sm">Só Juros</span>
+                      <span className="text-[9px] text-slate-500 leading-tight">Empréstimo</span>
                     </label>
                   </div>
 
