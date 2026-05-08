@@ -68,22 +68,6 @@ export default function AppDashboard() {
             </span>
             Fiadopag
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setActiveTab('clientes'); setAutoOpenCustomer(true); }}
-              className="p-2 text-slate-500 hover:text-emerald-600 transition-colors"
-              title="Novo Cliente"
-            >
-              <Users size={20} />
-            </button>
-            <button
-              onClick={() => { setActiveTab('vendas'); setAutoOpenSale(true); }}
-              className="p-2 text-slate-500 hover:text-emerald-600 transition-colors"
-              title="Nova Venda"
-            >
-              <ShoppingBag size={20} />
-            </button>
-          </div>
         </header>
 
         {/* Mobile Bottom Navigation */}
@@ -801,12 +785,12 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
               <button onClick={() => setIsModalOpen(false)} className="text-emerald-100 hover:text-white text-2xl leading-none">&times;</button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 scrollbar-thin bg-slate-50">
-              <form id="sale-form" onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin bg-slate-50">
+              <form id="sale-form" onSubmit={handleSubmit} className="space-y-4">
 
                 {/* Section 1: Basic Info */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">1. Informações Básicas</h3>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-2">1. Informações Básicas</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Buscar/Criar Cliente *</label>
@@ -837,7 +821,7 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Valor Principal (R$) *</label>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Valor Principal (R$)</label>
                     <div className="relative max-w-xs">
                       <span className="absolute left-3 top-[9px] font-bold text-slate-400">R$</span>
                       <input required type="number" step="0.01" min="0" placeholder="0.00" value={formData.totalValue} onChange={e => setFormData({ ...formData, totalValue: e.target.value })} className="w-full border-2 border-slate-300 rounded-lg pl-10 pr-3 py-2 text-lg font-bold focus:border-emerald-600 outline-none text-slate-900" />
@@ -846,54 +830,54 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                 </div>
 
                 {/* Section 2: Modality */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">2. Modelo de Operação</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <label className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col transition-all ${formData.modalidade === 'fiado' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-1">2. Modelo de Operação</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'fiado' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="fiado" checked={formData.modalidade === 'fiado'} onChange={() => setFormData({ ...formData, modalidade: 'fiado', taxaOperacao: '0' })} className="sr-only" />
-                      <span className="font-bold text-slate-800">Fiado Tradicional</span>
-                      <span className="text-xs text-slate-500 mt-1 leading-tight">Sem juros no montante, apenas multa por atraso.</span>
+                      <span className="font-bold text-slate-800 text-sm">Fiado</span>
+                      <span className="text-[10px] text-slate-500 leading-tight">Sem juros no capital.</span>
                     </label>
-                    <label className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col transition-all ${formData.modalidade === 'carne' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'carne' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="carne" checked={formData.modalidade === 'carne'} onChange={() => setFormData({ ...formData, modalidade: 'carne' })} className="sr-only" />
-                      <span className="font-bold text-slate-800">Carnê (Pré-fixado)</span>
-                      <span className="text-xs text-slate-500 mt-1 leading-tight">Juros somados ao principal e divididos.</span>
+                      <span className="font-bold text-slate-800 text-sm">Carnê</span>
+                      <span className="text-[10px] text-slate-500 leading-tight">Juros pré-fixados.</span>
                     </label>
-                    <label className={`cursor-pointer rounded-lg border-2 p-3 flex flex-col transition-all ${formData.modalidade === 'so_juros' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
+                    <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'so_juros' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
                       <input type="radio" name="modalidade" value="so_juros" checked={formData.modalidade === 'so_juros'} onChange={() => setFormData({ ...formData, modalidade: 'so_juros', frequencia: 'mensal' })} className="sr-only" />
-                      <span className="font-bold text-slate-800">Só Juros (Balão)</span>
-                      <span className="text-xs text-slate-500 mt-1 leading-tight">Cliente paga apenas juros mensais. Capital intacto.</span>
+                      <span className="font-bold text-slate-800 text-sm">Só Juros</span>
+                      <span className="text-[10px] text-slate-500 leading-tight">Cliente paga só juros.</span>
                     </label>
                   </div>
-
-                  {formData.modalidade !== 'fiado' && (
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Taxa de Juros sobre o Capital (%) *</label>
-                      <input required type="number" step="0.1" min="0" placeholder="Ex: 15" value={formData.taxaOperacao} onChange={e => setFormData({ ...formData, taxaOperacao: e.target.value })} className="w-full max-w-xs border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-600 outline-none font-bold text-slate-900" />
-                    </div>
-                  )}
                 </div>
 
-                {/* Section 3: Setup & Simulator */}
-                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2">3. Estrutura e Simulação</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Section 3: Structure */}
+                <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                  <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-1">3. Estrutura e Simulação</h3>
+                  
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Qtd. Parcelas / Meses</label>
-                      <input required type="number" min="1" max="120" value={formData.installCount} onChange={e => setFormData({ ...formData, installCount: e.target.value })} className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-600 outline-none" />
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Parcelas</label>
+                      <input type="number" min="1" max="100" value={formData.installCount} onChange={e => setFormData({ ...formData, installCount: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Frequência</label>
-                      <select value={formData.frequencia} onChange={e => setFormData({ ...formData, frequencia: e.target.value })} className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-600 outline-none bg-white">
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Frequência</label>
+                      <select disabled={formData.modalidade === 'so_juros'} value={formData.frequencia} onChange={e => setFormData({ ...formData, frequencia: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none bg-white">
+                        <option value="semanal">Semanal</option>
+                        <option value="quinzenal">Quinzenal</option>
                         <option value="mensal">Mensal</option>
-                        <option value="quinzenal" disabled={formData.modalidade === 'so_juros'}>Quinzenal</option>
-                        <option value="semanal" disabled={formData.modalidade === 'so_juros'}>Semanal</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">1º Vencimento</label>
-                      <input required type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full border border-slate-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-600 outline-none" />
+                      <label className="block text-xs font-medium text-slate-600 mb-1">1º Vencimento</label>
+                      <input type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">{formData.modalidade === 'fiado' ? 'Multa (%)' : 'Juros (%)'}</label>
+                      <input required type="number" step="0.1" min="0" value={formData.interestRate} onChange={e => setFormData({ ...formData, interestRate: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none" />
                     </div>
                   </div>
 
