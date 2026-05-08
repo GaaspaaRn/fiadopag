@@ -830,7 +830,7 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                 </div>
 
                 {/* Section 2: Modality */}
-                <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
+                <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
                   <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-1">2. Modelo de Operação</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     <label className={`cursor-pointer rounded-lg border-2 p-2 flex flex-col transition-all ${formData.modalidade === 'fiado' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300'}`}>
@@ -849,6 +849,13 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                       <span className="text-[10px] text-slate-500 leading-tight">Cliente paga só juros.</span>
                     </label>
                   </div>
+
+                  {formData.modalidade !== 'fiado' && (
+                    <div className="pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <label className="block text-xs font-bold text-emerald-700 mb-1">Juros sobre o Capital (%)</label>
+                      <input required type="number" step="0.1" min="0" placeholder="Ex: 10" value={formData.taxaOperacao} onChange={e => setFormData({ ...formData, taxaOperacao: e.target.value })} className="w-full max-w-[120px] border-2 border-emerald-200 rounded-lg px-3 py-1.5 text-sm focus:border-emerald-600 outline-none font-bold text-slate-900" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Section 3: Structure */}
@@ -876,8 +883,11 @@ function SalesView({ autoOpen, setAutoOpen }: { autoOpen?: boolean, setAutoOpen?
                       <input type="date" value={formData.startDate} onChange={e => setFormData({ ...formData, startDate: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">{formData.modalidade === 'fiado' ? 'Multa (%)' : 'Juros (%)'}</label>
-                      <input required type="number" step="0.1" min="0" value={formData.interestRate} onChange={e => setFormData({ ...formData, interestRate: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none" />
+                      <label className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Multa por Atraso (%)</label>
+                      <div className="relative">
+                        <input required type="number" step="0.1" min="0" value={formData.interestRate} onChange={e => setFormData({ ...formData, interestRate: e.target.value })} className="w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-emerald-600 outline-none pr-10" />
+                        <span className="absolute right-2 top-1.5 text-[10px] text-slate-400 font-bold">PRO-RATA</span>
+                      </div>
                     </div>
                   </div>
 
