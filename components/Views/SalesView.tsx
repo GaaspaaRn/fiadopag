@@ -31,7 +31,7 @@ export function SalesView({ autoOpen, setAutoOpen }: SalesViewProps) {
     frequencia: 'mensal',
     installCount: '1',
     startDate: new Date().toISOString().split('T')[0],
-    interestRate: '2', // default 2% per month
+    interestRate: '0', // default 0% per month
     notes: ''
   });
 
@@ -83,7 +83,7 @@ export function SalesView({ autoOpen, setAutoOpen }: SalesViewProps) {
 
       setIsModalOpen(false);
       setFormData({
-        customerName: '', product: '', totalValue: '', modalidade: 'fiado', taxaOperacao: '0', frequencia: 'mensal', installCount: '1', startDate: new Date().toISOString().split('T')[0], interestRate: '2', notes: ''
+        customerName: '', product: '', totalValue: '', modalidade: 'fiado', taxaOperacao: '0', frequencia: 'mensal', installCount: '1', startDate: new Date().toISOString().split('T')[0], interestRate: '0', notes: ''
       });
     } catch (err) {
       console.error(err);
