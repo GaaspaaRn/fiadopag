@@ -25,6 +25,7 @@ type StoreContextType = StoreState & {
   deleteProduct: (id: string) => Promise<void>;
   addSale: (s: Omit<Sale, 'id' | 'createdAt' | 'lucroOperacao' | 'valorTotalFinanciado' | 'principalPago'>) => Promise<string | void>;
   markInstallmentPaid: (id: string, paidValue: number) => Promise<void>;
+  updateInstallment: (id: string, data: { dueDate?: string; originalValue?: number }) => Promise<void>;
   deleteSale: (id: string) => Promise<void>;
   getDynamicInstallmentStatus: (inst: Installment) => InstallmentStatus;
   getCalculatedValue: (sale: Sale, inst: Installment) => { value: number; interest: number; daysLate: number };
@@ -217,6 +218,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const markInstallmentPaid = async (id: string, paidValue: number) => {
     await supabase.from('installments').update({ status: 'pago', data_pagamento: new Date().toISOString(), valor_juros_atraso: 0 }).eq('id', id);
+
+    // Auto-close: check if all installments of this sale are now paid
+    const inst = state.installments.find(i => i.id === id);
+    if (inst) {
+      const saleInstallments = state.installments.filter(i => i.saleId === inst.saleId);
+      const allPaid = saleInstallments.every(i => i.id === id || i.status === 'PAGO');
+      if (allPaid) {
+        await supabase.from('sales').update({ principal_pago: true }).eq('id', inst.saleId);
+      }
+    }
+
+    fetchData();
+  };
+
+  const updateInstallment = async (id: string, data: { dueDate?: string; originalValue?: number }) => {
+    const update: Record<string, any> = {};
+    if (data.dueDate !== undefined) update.data_vencimento = data.dueDate;
+    if (data.originalValue !== undefined) update.valor_original = data.originalValue;
+    await supabase.from('installments').update(update).eq('id', id);
     fetchData();
   };
 
@@ -260,7 +280,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const clearAllData = async () => {};
 
   return (
-    <StoreContext.Provider value={{ ...state, addCustomer, updateCustomer, deleteCustomer, addSale, markInstallmentPaid, deleteSale, getDynamicInstallmentStatus, getCalculatedValue, exportToCSV, importFromJSON, clearAllData, addProduct, updateProduct, deleteProduct, quitarCapitalPrincipal }}>
+    <StoreContext.Provider value={{ ...state, addCustomer, updateCustomer, deleteCustomer, addSale, markInstallmentPaid, updateInstallment, deleteSale, getDynamicInstallmentStatus, getCalculatedValue, exportToCSV, importFromJSON, clearAllData, addProduct, updateProduct, deleteProduct, quitarCapitalPrincipal }}>
       {state.isLoaded ? children : <div className="h-screen w-screen flex items-center justify-center bg-slate-50 text-slate-500 font-medium">Carregando Banco de Dados...</div>}
     </StoreContext.Provider>
   );

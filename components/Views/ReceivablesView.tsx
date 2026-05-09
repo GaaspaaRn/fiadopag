@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { Installment } from '@/lib/types';
 import { formatCurrency } from '@/lib/format';
-import { Search, Calendar, Check, AlertCircle } from 'lucide-react';
+import { Search, Calendar, Check, AlertCircle, Pencil } from 'lucide-react';
 import { format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 export function ReceivablesView() {
@@ -14,6 +14,10 @@ export function ReceivablesView() {
 
   const [payModalData, setPayModalData] = useState<{ inst: Installment | null, calc: { value: number, interest: number, daysLate: number } | null }>({ inst: null, calc: null });
   const [manualPayValue, setManualPayValue] = useState('');
+
+  const [editModalData, setEditModalData] = useState<Installment | null>(null);
+  const [editDueDate, setEditDueDate] = useState('');
+  const [editValue, setEditValue] = useState('');
 
   const setQuickRange = (type: 'today' | 'week' | 'month' | 'all') => {
     const now = new Date();
@@ -65,6 +69,22 @@ export function ReceivablesView() {
       store.markInstallmentPaid(payModalData.inst.id, parseFloat(manualPayValue));
       setPayModalData({ inst: null, calc: null });
     }
+  };
+
+  const openEditModal = (inst: Installment) => {
+    setEditModalData(inst);
+    setEditDueDate(inst.dueDate.split('T')[0]);
+    setEditValue(inst.originalValue.toString());
+  };
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editModalData) return;
+    await store.updateInstallment(editModalData.id, {
+      dueDate: editDueDate,
+      originalValue: parseFloat(editValue)
+    });
+    setEditModalData(null);
   };
 
   const totalsFilteredResult = filtered.reduce((acc, i) => {
@@ -193,9 +213,14 @@ export function ReceivablesView() {
                       <td className="py-4 px-6 text-right">
                         {status !== 'PAGO' ? (
                           <div className="flex flex-col gap-2 items-end">
-                            <button onClick={() => openPayModal(i)} className="text-sm font-semibold text-emerald-700 hover:text-white border border-emerald-200 hover:bg-emerald-600 px-4 py-2 rounded-lg transition-all shadow-sm group-hover:shadow focus:ring-2 focus:ring-offset-1 focus:ring-emerald-600 w-full whitespace-nowrap">
-                              Baixar Conta
-                            </button>
+                            <div className="flex items-center gap-2 w-full">
+                              <button onClick={() => openPayModal(i)} className="flex-1 text-sm font-semibold text-emerald-700 hover:text-white border border-emerald-200 hover:bg-emerald-600 px-4 py-2 rounded-lg transition-all shadow-sm group-hover:shadow focus:ring-2 focus:ring-offset-1 focus:ring-emerald-600 whitespace-nowrap">
+                                Baixar Conta
+                              </button>
+                              <button onClick={() => openEditModal(i)} className="border border-amber-300 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white p-2 rounded-lg transition-all shadow-sm min-w-[40px] min-h-[40px] flex items-center justify-center" title="Editar parcela">
+                                <Pencil size={16} />
+                              </button>
+                            </div>
                             {sale?.modalidade === 'so_juros' && !sale?.principalPago && (
                               <button onClick={() => { if (confirm('Tem certeza que deseja quitar o capital principal desta operação? Isso removerá as cobranças futuras de juros e encerrará a dívida principal.')) store.quitarCapitalPrincipal(sale.id); }} className="text-xs font-semibold text-amber-700 hover:text-white border border-amber-200 hover:bg-amber-600 px-4 py-1.5 rounded-lg transition-all shadow-sm focus:ring-2 focus:ring-offset-1 focus:ring-amber-600 w-full whitespace-nowrap">
                                 Quitar Capital
@@ -253,6 +278,58 @@ export function ReceivablesView() {
               <div className="pt-2 flex justify-end gap-3 flex-col sm:flex-row mt-6">
                 <button type="button" onClick={() => setPayModalData({ inst: null, calc: null })} className="w-full px-4 py-3 flex justify-center text-sm text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Abortar Operação</button>
                 <button type="submit" className="w-full px-4 py-3 flex justify-center text-sm text-white font-bold bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">Dar Quitação Plena</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Parcela */}
+      {editModalData && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-amber-500 text-white flex justify-between items-center shadow-inner">
+              <h2 className="text-lg font-bold flex items-center gap-2"><Pencil size={18} /> Editar Parcela</h2>
+              <button onClick={() => setEditModalData(null)} className="text-amber-100 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <form onSubmit={handleEditSave} className="p-6 space-y-5">
+              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-sm text-slate-600">
+                <span className="font-semibold text-slate-800">Parcela {editModalData.number}</span>
+                {' — '}
+                {store.customers.find(c => c.id === editModalData.customerId)?.name || 'Cliente'}
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Data de Vencimento</label>
+                <input
+                  required
+                  type="date"
+                  value={editDueDate}
+                  onChange={e => setEditDueDate(e.target.value)}
+                  className="w-full border-2 border-slate-300 rounded-xl px-3 py-2 text-sm font-medium focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 transition-all outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Valor Original (R$)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-[10px] font-bold text-slate-400">R$</span>
+                  <input
+                    required
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={editValue}
+                    onChange={e => setEditValue(e.target.value)}
+                    className="w-full border-2 border-slate-300 rounded-xl pl-10 pr-3 py-2 text-xl font-bold focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 text-slate-900 transition-all outline-none"
+                  />
+                </div>
+                <p className="text-xs text-slate-400 mt-2 font-medium">Altere o valor caso a parcela tenha sido lançada incorretamente.</p>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-3 flex-col sm:flex-row mt-6">
+                <button type="button" onClick={() => setEditModalData(null)} className="w-full px-4 py-3 flex justify-center text-sm text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
+                <button type="submit" className="w-full px-4 py-3 flex justify-center text-sm text-white font-bold bg-amber-500 hover:bg-amber-600 rounded-xl shadow-md hover:shadow-lg transition-all focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">Salvar Alteração</button>
               </div>
             </form>
           </div>

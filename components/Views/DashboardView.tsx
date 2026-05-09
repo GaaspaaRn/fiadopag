@@ -5,7 +5,7 @@ import { SummaryCard } from '@/components/Dashboard/SummaryCard';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { format, parseISO, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Users, Plus, AlertCircle, AlertTriangle, Check, Wallet } from 'lucide-react';
+import { Users, Plus, AlertCircle, AlertTriangle, Check, Wallet, DollarSign } from 'lucide-react';
 
 interface DashboardViewProps {
   onNewSale: () => void;
@@ -89,10 +89,11 @@ export function DashboardView({ onNewSale, onNewCustomer }: DashboardViewProps) 
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <SummaryCard title="A Receber (Parcelas)" value={stats.totalReceber} type="info" icon={<Wallet size={20} className="text-blue-600" />} />
         <SummaryCard title="Valor Vencido (Atrasado)" value={stats.totalAtrasado} type="danger" icon={<AlertCircle size={20} className="text-red-600" />} />
         <SummaryCard title="Capital na Rua (Ativo)" value={stats.capitalNaRua} type="warning" icon={<AlertTriangle size={20} className="text-amber-600" />} />
+        <SummaryCard title="Total Recebido" value={stats.totalRecebido} type="success" icon={<DollarSign size={20} className="text-emerald-600" />} />
         <SummaryCard title="Lucro Projetado (Fixo)" value={stats.lucroProjetado} type="success" icon={<Check size={20} className="text-emerald-600" />} />
       </div>
 
