@@ -70,53 +70,36 @@ export function DashboardView({ onNewSale, onNewCustomer }: DashboardViewProps) 
           <h1 className="text-2xl font-semibold tracking-tight">Visão Geral</h1>
           <p className="text-sm text-slate-500">Acompanhe a saúde financeira do seu negócio.</p>
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <button
-            onClick={onNewCustomer}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95"
-          >
-            <Users size={18} className="text-emerald-600" />
-            <span className="hidden sm:inline">Novo Cliente</span>
-            <span className="sm:hidden">Cliente</span>
-          </button>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <SummaryCard title="A Receber (Parcelas)" value={stats.totalReceber} type="info" icon={<Wallet size={20} className="text-blue-600" />} />
+        <SummaryCard title="Valor Atrasado" value={stats.totalAtrasado} type="danger" icon={<AlertCircle size={20} className="text-red-600" />} />
+        <SummaryCard title="Capital na Rua (Ativo)" value={stats.capitalNaRua} type="warning" icon={<AlertTriangle size={20} className="text-amber-600" />} />
+        <SummaryCard title="Total Recebido" value={stats.totalRecebido} type="success" icon={<DollarSign size={20} className="text-emerald-600" />} />
+        <SummaryCard title="Lucro Projetado" value={stats.lucroProjetado} type="success" icon={<Check size={20} className="text-emerald-600" />} />
+        
+        {/* Action Buttons */}
+        <div className="bg-white rounded-xl border border-slate-200 p-2 sm:p-3 shadow-sm flex flex-col gap-2">
           <button
             onClick={onNewSale}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-all shadow-md hover:shadow-lg active:scale-95"
+            className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-md active:scale-95"
           >
             <Plus size={18} />
             Nova Venda
           </button>
+          <button
+            onClick={onNewCustomer}
+            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm active:scale-95"
+          >
+            <Users size={18} className="text-emerald-600" />
+            Novo Cliente
+          </button>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <SummaryCard title="A Receber (Parcelas)" value={stats.totalReceber} type="info" icon={<Wallet size={20} className="text-blue-600" />} />
-        <SummaryCard title="Valor Vencido (Atrasado)" value={stats.totalAtrasado} type="danger" icon={<AlertCircle size={20} className="text-red-600" />} />
-        <SummaryCard title="Capital na Rua (Ativo)" value={stats.capitalNaRua} type="warning" icon={<AlertTriangle size={20} className="text-amber-600" />} />
-        <SummaryCard title="Total Recebido" value={stats.totalRecebido} type="success" icon={<DollarSign size={20} className="text-emerald-600" />} />
-        <SummaryCard title="Lucro Projetado (Fixo)" value={stats.lucroProjetado} type="success" icon={<Check size={20} className="text-emerald-600" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-6">
-        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-lg font-medium mb-6">Projeção de Recebimentos Futuros</h2>
-          {chartData.length > 0 ? (
-            <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${v}`} />
-                  <RechartsTooltip cursor={{ fill: '#f8fafc' }} formatter={(v: any) => formatCurrency(v)} />
-                  <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div className="h-72 flex items-center justify-center text-slate-400 text-sm">Nenhum título projetado.</div>
-          )}
-        </div>
-
+        {/* Left Side: Vencimentos and Atrasos */}
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col h-fit">
           <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
             <AlertTriangle size={18} className="text-amber-500" />
@@ -172,6 +155,26 @@ export function DashboardView({ onNewSale, onNewCustomer }: DashboardViewProps) 
               </ul>
             )}
           </div>
+        </div>
+
+        {/* Right Side: Projeção Chart (Last) */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col">
+          <h2 className="text-lg font-medium mb-6">Projeção de Recebimentos Futuros</h2>
+          {chartData.length > 0 ? (
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${v}`} />
+                  <RechartsTooltip cursor={{ fill: '#f8fafc' }} formatter={(v: any) => formatCurrency(v)} />
+                  <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} barSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-72 flex items-center justify-center text-slate-400 text-sm">Nenhum título projetado.</div>
+          )}
         </div>
       </div>
     </div>
