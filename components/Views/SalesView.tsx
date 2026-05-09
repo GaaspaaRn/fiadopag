@@ -68,9 +68,22 @@ export function SalesView({ autoOpen, setAutoOpen }: SalesViewProps) {
         });
       }
 
+      // Auto-create product if it doesn't exist
+      const typedProduct = formData.product.trim();
+      const existingProduct = store.products.find(p => p.name.toLowerCase() === typedProduct.toLowerCase());
+      if (!existingProduct && typedProduct) {
+        await store.addProduct({
+          name: typedProduct,
+          sellPrice: parseFloat(formData.totalValue.replace(',', '.')),
+          costPrice: 0,
+          stock: 0,
+          barcode: ''
+        });
+      }
+
       await store.addSale({
         customerId: finalCustomerId,
-        product: formData.product,
+        product: typedProduct,
         totalValue: parseFloat(formData.totalValue.replace(',', '.')),
         modalidade: formData.modalidade,
         taxaOperacao: parseFloat(formData.taxaOperacao) || 0,
